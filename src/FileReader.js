@@ -178,30 +178,30 @@ class FileReader extends Component {
             dataForBarChart.push(info)
         });
 
-       if(this.state.isDataLoaded){
-           displayCharts = (
-        <div>
-            <Chart
-                    chartType="ColumnChart"
-                    width="100%"
-                    height="400px"
-                    data={dataForBarChart}
-                />
+        if (this.state.isDataLoaded) {
+            displayCharts = (
+                <div>
+                    <Chart
+                        chartType="ColumnChart"
+                        width="100%"
+                        height="400px"
+                        data={dataForBarChart}
+                    />
 
-                <Chart
-                    chartType="PieChart"
-                    width="100%"
-                    height="400px"
-                    data={dataForPieChart}
-                    options={options}
-                />
-           </div> )
-       }else{
-        displayCharts = (
-<div>
-            
-        </div>)
-       }
+                    <Chart
+                        chartType="PieChart"
+                        width="100%"
+                        height="400px"
+                        data={dataForPieChart}
+                        options={options}
+                    />
+                </div>)
+        } else {
+            displayCharts = (
+                <div>
+
+                </div>)
+        }
 
         if (this.state.globalGrades) {
             Promedio = <h1>Promedio Grupal {this.state.globalGrades}</h1>
@@ -251,7 +251,7 @@ class FileReader extends Component {
                 </div>
                 {displayCharts}
 
-                
+
 
 
             </div>
