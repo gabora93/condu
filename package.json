@@ -6,6 +6,7 @@
     "canvasjs": "^1.8.1",
     "papaparse": "^4.6.3",
     "react": "^16.8.0",
+    "react-awesome-button": "^5.0.0",
     "react-charts": "^2.0.0-alpha.12",
     "react-dom": "^16.8.0",
     "react-google-charts": "^3.0.10",

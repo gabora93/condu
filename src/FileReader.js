@@ -3,30 +3,26 @@ import Papa from 'papaparse';
 import Chart from "react-google-charts";
 import MinimumGrade from './components/MinimumGrade/MinimumGrade';
 import BestGrade from './components/BestGrade/BestGrade';
+import Button from './components/Button/Button';
+import ButtonDisabled from './components/Button/ButtonDisabled';
 
 class FileReader extends Component {
-    constructor() {
-        super();
-        this.state = {
-            csvfile: undefined,
-            dataFromCSV: [],
-            isFileLoaded: false,
-            globalGrades: null,
-            alumnosPrimerGrado: [],
-            promedioPrimerGrado: 0,
-            alumnosSegundoGrado: [],
-            promedioSegundoGrado: 0,
-            alumnosTercerGrado: [],
-            promedioTercerGrado: 0,
-            alumnoMejorCalificacion: null,
-            alumnoPeorCalificacion: null,
-            isDataLoaded: false
-        };
-        this.updateData = this.updateData.bind(this);
-    }
 
-
-
+    state = {
+        csvfile: undefined,
+        dataFromCSV: [],
+        isFileLoaded: false,
+        globalGrades: null,
+        studentsFirstGrade: [],
+        averageFirstGrade: 0,
+        studentsSecondGrade: [],
+        averageSecondGrade: 0,
+        studentsThirdGrade: [],
+        averageThirdGrade: 0,
+        studentBestGrade: null,
+        studentWorstGrade: null,
+        isDataLoaded: false
+    };
 
     handleChange = event => {
         this.setState({
@@ -42,9 +38,9 @@ class FileReader extends Component {
             header: true,
             skipEmptyLines: true
         });
-
     };
 
+    //Function to add random color to the bars in the bar chart
     getRandomColor() {
         var letters = '0123456789ABCDEF'.split('');
         var color = '#';
@@ -54,124 +50,100 @@ class FileReader extends Component {
         return color;
     }
 
-    updateData(result) {
-        console.log(result)
+    updateData = (result) => {
+
         var data = result.data;
-        console.log(data);
 
-        var primerGrado = data.filter(alumno => {
-            return alumno.Grado === "1"
+        var firstGrade = data.filter(student => {
+            return student.Grado === "1"
         })
 
-        var segundoGrado = data.filter(alumno => {
-            return alumno.Grado === "2"
+        var secondGrade = data.filter(student => {
+            return student.Grado === "2"
         })
 
-        var tercerGrado = data.filter(alumno => {
-            return alumno.Grado === "3"
+        var thirdGrade = data.filter(student => {
+            return student.Grado === "3"
         })
         this.setState({
             dataFromCSV: data,
-            alumnosPrimerGrado: primerGrado,
-            alumnosSegundoGrado: segundoGrado,
-            alumnosTercerGrado: tercerGrado
+            studentsFirstGrade: firstGrade,
+            studentsSecondGrade: secondGrade,
+            studentsThirdGrade: thirdGrade,
+            isDataLoaded: true
         })
-
-
-        console.log(this.state)
         this.setGrupos()
-
-
-
+        this.getWorstAndBestGrades()
     }
 
-
+    //stores the scores of the students by his school grade
     setGrupos() {
-        console.log('set grupos', this.state.alumnosPrimerGrado)
-        const { alumnosPrimerGrado, alumnosSegundoGrado, alumnosTercerGrado } = this.state
-        const calificacionesPrimerGrado = []
-        const calificacionesSegundoGrado = []
-        const calificacionesTerceGrado = []
+        const { studentsFirstGrade, studentsSecondGrade, studentsThirdGrade } = this.state
+        const gradesFirstGrade = []
+        const gradesSecondGrade = []
+        const gradesThirdGrade = []
         var GlobalGrades = []
-        console.log(alumnosPrimerGrado)
-        alumnosPrimerGrado.forEach(alumno => {
-            calificacionesPrimerGrado.push(parseFloat(alumno.Calificacion))
+
+        studentsFirstGrade.forEach(alumno => {
+            gradesFirstGrade.push(parseFloat(alumno.Calificacion))
         });
 
-        alumnosSegundoGrado.forEach(alumno => {
-            calificacionesSegundoGrado.push(parseFloat(alumno.Calificacion))
+        studentsSecondGrade.forEach(alumno => {
+            gradesSecondGrade.push(parseFloat(alumno.Calificacion))
         });
 
-        alumnosTercerGrado.forEach(alumno => {
-            calificacionesTerceGrado.push(parseFloat(alumno.Calificacion))
+        studentsThirdGrade.forEach(alumno => {
+            gradesThirdGrade.push(parseFloat(alumno.Calificacion))
         });
 
-        console.log(alumnosPrimerGrado)
-         
-        alumnosPrimerGrado.forEach(alumno => {
+        studentsFirstGrade.forEach(alumno => {
             GlobalGrades.push(parseFloat(alumno.Calificacion))
         })
 
-        alumnosSegundoGrado.forEach(alumno => {
+        studentsSecondGrade.forEach(alumno => {
             GlobalGrades.push(parseFloat(alumno.Calificacion))
         })
 
-        alumnosTercerGrado.forEach(alumno => {
+        studentsThirdGrade.forEach(alumno => {
             GlobalGrades.push(parseFloat(alumno.Calificacion))
         })
-        
 
+        var average = this.addAndGetAverage(GlobalGrades)
+        this.setState({ globalGrades: average.toFixed(2) })
 
-        
-    
-
-
-
-        console.log(GlobalGrades)
-
-        var globaliti  = this.sumar(GlobalGrades)
-        this.setState({globalGrades: globaliti})
-        console.log(globaliti)
-        console.log(GlobalGrades.length)
-
-        console.log('calificacionesPrimerGrado', calificacionesPrimerGrado)
-
-        var sumaPrimerGrado = this.sumar(calificacionesPrimerGrado)
-        var sumaSegundoGrado = this.sumar(calificacionesSegundoGrado)
-        var sumaTercerGrado = this.sumar(calificacionesTerceGrado)
+        var sumaPrimerGrado = this.addAndGetAverage(gradesFirstGrade)
+        var sumaSegundoGrado = this.addAndGetAverage(gradesSecondGrade)
+        var sumaTercerGrado = this.addAndGetAverage(gradesThirdGrade)
 
         this.setState({
-            promedioPrimerGrado: sumaPrimerGrado,
-            promedioSegundoGrado: sumaSegundoGrado,
-            promedioTercerGrado: sumaTercerGrado
+            averageFirstGrade: sumaPrimerGrado,
+            averageSecondGrade: sumaSegundoGrado,
+            averageThirdGrade: sumaTercerGrado
         })
-        console.log(this.state)
+    }
 
-
+    getWorstAndBestGrades() {
+        //getting the highest score of the students
         const maxValueOfY = Math.max(...this.state.dataFromCSV.map(o => o.Calificacion), 0);
 
         var CuadroDeHonor = this.state.dataFromCSV.filter(alumno => {
             return alumno.Calificacion == maxValueOfY
         })
-
+        //getting the lowest score of the students
         const minValueOfStudents = Math.min(...this.state.dataFromCSV.map(o => o.Calificacion));
-        console.log('min', minValueOfStudents)
 
         var CuadroDeHorror = this.state.dataFromCSV.filter(alumno => {
             return alumno.Calificacion == minValueOfStudents
         })
 
         this.setState({
-            alumnoMejorCalificacion: CuadroDeHonor,
-            alumnoPeorCalificacion: CuadroDeHorror
+            studentBestGrade: CuadroDeHonor,
+            studentWorstGrade: CuadroDeHorror
         })
-        console.log(maxValueOfY)
-        console.log(CuadroDeHonor)
-
     }
 
-    sumar(calif) {
-        console.log(calif)
+    //make a sum of the scores and get the average.
+    addAndGetAverage(calif) {
         var suma = calif.reduce(function (sum, value) {
             return sum + value;
         }, 0);
@@ -179,14 +151,20 @@ class FileReader extends Component {
     }
 
     render() {
-        const dataGrados = [
-            ["Grado", "Calificacion Promedio"],
-            ["Primer Grado", this.state.promedioPrimerGrado],
-            ["Segundo Grado", this.state.promedioSegundoGrado],
-            ["Tercer Grado", this.state.promedioTercerGrado]
 
+        var worstGrade;
+        var bestGrade;
+        var Promedio;
+        var displayCharts;
+
+        const dataForPieChart = [
+            ["Grado", "Calificacion Promedio"],
+            ["Primer Grado", this.state.averageFirstGrade],
+            ["Segundo Grado", this.state.averageSecondGrade],
+            ["Tercer Grado", this.state.averageThirdGrade]
         ];
-        const array = [["Alumno", "Calificacion", { role: "style" }],]
+
+        const dataForBarChart = [["Alumno", "Calificacion", { role: "style" }],]
         const options = {
             title: "Promedio por grado escolar",
             pieHole: 0.4,
@@ -194,32 +172,52 @@ class FileReader extends Component {
         };
         const { dataFromCSV } = this.state
 
-        console.log(dataFromCSV)
         dataFromCSV.forEach(alumno => {
             var color = this.getRandomColor()
             var info = [alumno.Nombres, parseFloat(alumno.Calificacion), color]
-
-            array.push(info)
+            dataForBarChart.push(info)
         });
 
+       if(this.state.isDataLoaded){
+           displayCharts = (
+        <div>
+            <Chart
+                    chartType="ColumnChart"
+                    width="100%"
+                    height="400px"
+                    data={dataForBarChart}
+                />
 
-        var worstGrade;
-        var bestGrade;
-        var Promedio;
-        if(this.state.globalGrades){
-            Promedio = <h1>Promedio Grupal { this.state.globalGrades}</h1>
-        }else{
+                <Chart
+                    chartType="PieChart"
+                    width="100%"
+                    height="400px"
+                    data={dataForPieChart}
+                    options={options}
+                />
+           </div> )
+       }else{
+        displayCharts = (
+<div>
+            
+        </div>)
+       }
+
+        if (this.state.globalGrades) {
+            Promedio = <h1>Promedio Grupal {this.state.globalGrades}</h1>
+        } else {
             Promedio = <h1>Add file to show the average grade</h1>
         }
-        if (this.state.alumnoPeorCalificacion) {
+
+        if (this.state.studentWorstGrade) {
             worstGrade = <MinimumGrade
-                name={this.state.alumnoPeorCalificacion[0].Nombres}
-                lastName={this.state.alumnoPeorCalificacion[0]["Apellido Paterno"]}
-                grade={this.state.alumnoPeorCalificacion[0].Calificacion} />
+                name={this.state.studentWorstGrade[0].Nombres}
+                lastName={this.state.studentWorstGrade[0]["Apellido Paterno"]}
+                grade={this.state.studentWorstGrade[0].Calificacion} />
             bestGrade = <BestGrade
-                name={this.state.alumnoMejorCalificacion[0].Nombres}
-                lastName={this.state.alumnoMejorCalificacion[0]["Apellido Paterno"]}
-                grade={this.state.alumnoMejorCalificacion[0].Calificacion} />
+                name={this.state.studentBestGrade[0].Nombres}
+                lastName={this.state.studentBestGrade[0]["Apellido Paterno"]}
+                grade={this.state.studentBestGrade[0].Calificacion} />
 
 
         } else {
@@ -231,6 +229,7 @@ class FileReader extends Component {
         return (
             <div className="App">
                 <h2>Import CSV File!</h2>
+
                 <input
                     className="csv-input"
                     type="file"
@@ -242,26 +241,17 @@ class FileReader extends Component {
                     onChange={this.handleChange}
                 />
                 <p />
-                {this.state.isFileLoaded ? <button onClick={this.importCSV}> Upload now!</button> : <p>Sube un archivo</p>}
+
+                {this.state.isFileLoaded ? <Button updateData={this.importCSV} /> : <ButtonDisabled />}
+
                 <div>
                     {Promedio}
                     {bestGrade}
                     {worstGrade}
                 </div>
-                <Chart
-                    chartType="ColumnChart"
-                    width="100%"
-                    height="400px"
-                    data={array}
-                />
+                {displayCharts}
 
-                <Chart
-                    chartType="PieChart"
-                    width="100%"
-                    height="400px"
-                    data={dataGrados}
-                    options={options}
-                />
+                
 
 
             </div>
