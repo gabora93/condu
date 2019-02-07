@@ -14,6 +14,6 @@ To run this project in local:
 
 Clone repo in your computer
 
-In terminal, Go to project folder and run npm install
+In terminal, Go to project folder and run npm install for installing dependencies
 
 for start the app run: npm start
